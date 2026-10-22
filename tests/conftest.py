@@ -1,12 +1,19 @@
 import pytest
 
-CASE_IDS_BY_TEST = {'test_entrypoint_exists_and_runs': ['LEG-001-A', 'LEG-001-B', 'LEG-009-A'], 'test_config_rejects_non_object_invalid_utf8_and_duplicate_keys_without_publish': ['LEG-009-B'], 'test_config_read_failure_exits_before_publish': [], 'test_config_requires_exact_top_level_and_particle_fields': [], 'test_config_types_ranges_boundary_and_unique_ids': ['LEG-004-A'], 'test_generated_data_is_deterministic_and_checkpoint_zero_state_is_valid': ['LEG-003-A', 'LEG-004-B', 'LEG-005-A', 'LEG-006-A'], 'test_output_checkpoint_schema_order_types_and_hashes': ['LEG-003-B', 'LEG-005-B', 'LEG-006-B'], 'test_output_preserves_input_order_and_all_diagnostics_are_finite': [], 'test_extreme_finite_input_still_produces_finite_json_numbers': [], 'test_repeat_from_final_checkpoint_is_byte_stable': [], 'test_box_boundary_reflects_once_and_across_multiple_walls_on_both_axes': [], 'test_periodic_wrap_and_minimum_image_collisions_across_x_and_y_seams': ['LEG-002-A', 'LEG-007-A'], 'test_each_step_advances_then_applies_boundary_then_resolves_collisions': ['LEG-002-B', 'LEG-007-B'], 'test_unequal_mass_oblique_collision_conserves_energy_and_momentum': [], 'test_utf8_pair_order_exact_overlap_and_once_per_step_are_deterministic': [], 'test_overlapping_but_separating_particles_do_not_collide': [], 'test_long_periodic_run_bounds_energy_drift_and_tracks_intermediate_peak': [], 'test_valid_checkpoint_reorders_particles_and_preserves_historical_diagnostics': [], 'test_resume_after_unequal_mass_collision_matches_continuous_files_byte_for_byte': [], 'test_resumed_collision_history_publishes_consistently_to_distinct_parents': ['LEG-008-B'], 'test_checkpoint_rejects_missing_extra_bad_types_ranges_ids_and_tampered_state': [], 'test_checkpoint_invalid_utf8_and_duplicate_keys_fall_back_silently': [], 'test_invalid_config_preserves_both_existing_targets': [], 'test_temp_creation_failure_in_either_parent_preserves_targets_and_cleans_up': [], 'test_temp_write_failure_preserves_targets_and_cleans_up': [], 'test_first_replacement_failure_keeps_directory_and_other_file_unchanged': [], 'test_second_replacement_failure_rolls_back_regular_and_missing_output_states': [], 'test_second_replacement_permission_failure_restores_both_regular_files': [], 'test_successful_publish_leaves_no_temporary_files_in_distinct_parents': ['LEG-008-A']}
+CASE_IDS_BY_TEST = {'test_config_schema_and_numeric_validation': ['REQ-001-01', 'REQ-003-01', 'REQ-004-01', 'REQ-007-01', 'REQ-008-01', 'REQ-010-01', 'REQ-014-01', 'REQ-016-01', 'REQ-021-02', 'REQ-025-01', 'REQ-025-02', 'REQ-025-03'], 'test_dense_mass_checks_recover_physical_masses': ['REQ-001-02', 'REQ-003-02', 'REQ-004-02', 'REQ-005-01', 'REQ-006-01', 'REQ-007-02', 'REQ-008-02', 'REQ-009-01', 'REQ-010-02', 'REQ-012-01', 'REQ-014-02', 'REQ-016-02', 'REQ-017-01'], 'test_particle_mass_range_endpoints_are_accepted': ['REQ-027-01'], 'test_box_boundary_reflects_once_and_across_multiple_walls': ['REQ-002-01'], 'test_elastic_collision_conserves_energy_and_momentum': ['REQ-002-02', 'REQ-011-01', 'REQ-013-01'], 'test_mass_checks_require_full_rank': ['REQ-005-02', 'REQ-006-02', 'REQ-009-02', 'REQ-012-02', 'REQ-017-02'], 'test_periodic_seam_collision': ['REQ-011-02', 'REQ-013-02'], 'test_touching_but_not_approaching_particles_do_not_collide': ['REQ-011-03'], 'test_checkpoint_resume_matches_continuous_run': ['REQ-015-01', 'REQ-018-01', 'REQ-023-01'], 'test_invalid_checkpoint_falls_back_to_start': ['REQ-015-02', 'REQ-018-02', 'REQ-023-02'], 'test_entrypoint_and_output_contract': ['REQ-019-01', 'REQ-020-01', 'REQ-022-02', 'REQ-024-01', 'REQ-026-01', 'REQ-026-02', 'REQ-026-03'], 'test_repeat_run_is_byte_identical': ['REQ-019-02', 'REQ-020-02', 'REQ-022-01', 'REQ-024-02'], 'test_invalid_config_preserves_existing_targets': ['REQ-021-01']}
 
-@pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    outcome = yield
-    report = outcome.get_result()
-    if call.when == 'call':
-        for case_id in CASE_IDS_BY_TEST.get(item.name, []):
-            prefix = 'PASS ' if report.passed else '\nFAIL '
-            print(prefix + case_id, flush=True)
+_RESULTS = {}
+
+
+def pytest_runtest_logreport(report):
+    if report.when == "call":
+        _RESULTS[report.nodeid.split("::")[-1]] = report.passed
+
+
+def pytest_sessionfinish(session, exitstatus):
+    for test_name, case_ids in CASE_IDS_BY_TEST.items():
+        passed = _RESULTS.get(test_name)
+        if passed is None:
+            continue
+        for case_id in case_ids:
+            print(("PASS " if passed else "FAIL ") + case_id, flush=True)

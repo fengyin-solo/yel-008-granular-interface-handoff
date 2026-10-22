@@ -8,7 +8,8 @@ import tempfile
 from pathlib import Path
 
 PARTICLE_KEYS = ("id", "mass", "radius", "x", "y", "vx", "vy")
-CONFIG_KEYS = ("dt", "steps", "seed", "boundary", "particles")
+CONFIG_KEYS = ("dt", "steps", "seed", "boundary", "particles", "mass_checks")
+MASS_CHECK_KEYS = ("check_id", "coefficients", "total")
 CHECKPOINT_KEYS = (
     "version", "step", "seed", "config_sha256", "initial_energy",
     "initial_momentum", "max_relative_energy_error", "collision_count",
@@ -101,6 +102,75 @@ def validate_particle(particle, identifiers, *, velocity_limit):
         raise ValueError("particle position")
 
 
+def solve_mass_factors(particles, checks):
+    identifiers = [particle["id"] for particle in particles]
+    if not particles:
+        if checks != []:
+            raise ValueError("empty particle table requires empty mass checks")
+        return {}
+    if not isinstance(checks, list) or len(checks) != len(particles):
+        raise ValueError("mass check count")
+    identifier_set = set(identifiers)
+    check_ids = set()
+    matrix = []
+    totals = []
+    for check in checks:
+        if not isinstance(check, dict) or set(check) != set(MASS_CHECK_KEYS):
+            raise ValueError("mass check schema")
+        check_id = check["check_id"]
+        if not isinstance(check_id, str) or not check_id or check_id in check_ids:
+            raise ValueError("mass check id")
+        try:
+            encoded_check_id = check_id.encode("utf-8")
+        except UnicodeEncodeError as error:
+            raise ValueError("mass check id Unicode") from error
+        if len(encoded_check_id) > MAX_ID_BYTES:
+            raise ValueError("mass check id length")
+        check_ids.add(check_id)
+        coefficients = check["coefficients"]
+        if not isinstance(coefficients, dict) or set(coefficients) != identifier_set:
+            raise ValueError("mass check coefficient keys")
+        row = []
+        for identifier in identifiers:
+            coefficient = coefficients[identifier]
+            if type(coefficient) is not int or not -1000 <= coefficient <= 1000:
+                raise ValueError("mass check coefficient")
+            row.append(float(coefficient) * float(particles[identifiers.index(identifier)]["mass"]))
+        total = check["total"]
+        if not finite_number(total):
+            raise ValueError("mass check total")
+        matrix.append(row)
+        totals.append(float(total))
+    augmented = [row + [value] for row, value in zip(matrix, totals)]
+    size = len(identifiers)
+    for column in range(size):
+        pivot = max(range(column, size), key=lambda row: abs(augmented[row][column]))
+        if abs(augmented[pivot][column]) < 1e-15:
+            raise ValueError("mass checks are rank deficient")
+        augmented[column], augmented[pivot] = augmented[pivot], augmented[column]
+        divisor = augmented[column][column]
+        for index in range(column, size + 1):
+            augmented[column][index] /= divisor
+        for row in range(size):
+            if row == column:
+                continue
+            factor = augmented[row][column]
+            if factor == 0:
+                continue
+            for index in range(column, size + 1):
+                augmented[row][index] -= factor * augmented[column][index]
+    factors = {}
+    for index, identifier in enumerate(identifiers):
+        factor = augmented[index][size]
+        if not math.isfinite(factor) or not 1e-6 <= factor <= 1e6:
+            raise ValueError("mass factor range")
+        nominal = particles[index]["mass"] * factor
+        if not math.isfinite(nominal) or not 1e-4 <= nominal <= 1e4:
+            raise ValueError("recovered mass range")
+        factors[identifier] = factor
+    return factors
+
+
 def validate_config(config):
     if not isinstance(config, dict) or set(config) != set(CONFIG_KEYS):
         raise ValueError("config schema")
@@ -117,6 +187,13 @@ def validate_config(config):
     identifiers = set()
     for particle in config["particles"]:
         validate_particle(particle, identifiers, velocity_limit=1e4)
+    factors = solve_mass_factors(config["particles"], config["mass_checks"])
+    recovered = []
+    for particle in config["particles"]:
+        item = normalize_particle(particle)
+        item["mass"] = particle["mass"] * factors.get(particle["id"], 1.0)
+        recovered.append(item)
+    return recovered
 
 
 def checkpoint_payload(checkpoint):
@@ -342,10 +419,10 @@ def main():
 
     config_bytes = Path(args.config).read_bytes()
     config = strict_load(args.config)
-    validate_config(config)
+    particles = validate_config(config)
     config_hash = sha256(config_bytes)
 
-    particles = [normalize_particle(particle) for particle in config["particles"]]
+    config["particles"] = particles
     start = 0
     initial_energy = kinetic_energy(particles)
     initial_momentum = momentum(particles)

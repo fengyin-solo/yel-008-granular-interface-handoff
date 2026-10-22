@@ -18,6 +18,10 @@ def main(config_path, checkpoint_path):
             {"id": "p-a", "mass": 1.0, "radius": 0.1, "x": 0.25, "y": 0.5, "vx": 0.4, "vy": 0.0},
             {"id": "p-b", "mass": 2.0, "radius": 0.1, "x": 0.75, "y": 0.5, "vx": -0.2, "vy": 0.0},
         ],
+        "mass_checks": [
+            {"check_id": "C-A", "coefficients": {"p-a": 1, "p-b": 0}, "total": 1.0},
+            {"check_id": "C-B", "coefficients": {"p-a": 0, "p-b": 1}, "total": 2.0},
+        ],
     }
     config_bytes = compact_bytes(config) + b"\n"
     Path(config_path).write_bytes(config_bytes)
