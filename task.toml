@@ -1,0 +1,27 @@
+schema_version = "1.3"
+
+[task]
+name = "local/granular-interface-handoff"
+authors = [{ name = "applepig" }]
+keywords = ["granular-motion", "seam-contact", "shift-handoff", "paired-commit"]
+description = "Repair a two-dimensional granular handoff that must preserve seam contact, cumulative diagnostics, and paired output recovery."
+
+[agent]
+timeout_sec = 3600
+
+[environment]
+build_timeout_sec = 600
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+gpus = 0
+allow_internet = true
+
+[verifier]
+timeout_sec = 360
+
+[metadata]
+difficulty = "expert"
+category = "backend"
+tags = ["particle-simulation", "collision-response", "checkpoint-resume", "transactional-publish"]
+expert_time_estimate = "4h"

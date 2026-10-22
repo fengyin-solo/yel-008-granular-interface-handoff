@@ -1,0 +1,133 @@
+{
+  "gate_tests": [
+    "test_outputs.py::test_box_boundary_reflects_once_and_across_multiple_walls_on_both_axes",
+    "test_outputs.py::test_periodic_wrap_and_minimum_image_collisions_across_x_and_y_seams",
+    "test_outputs.py::test_unequal_mass_oblique_collision_conserves_energy_and_momentum",
+    "test_outputs.py::test_overlapping_but_separating_particles_do_not_collide",
+    "test_outputs.py::test_long_periodic_run_bounds_energy_drift_and_tracks_intermediate_peak",
+    "test_outputs.py::test_valid_checkpoint_reorders_particles_and_preserves_historical_diagnostics"
+  ],
+  "schema_version": 1,
+  "tests": {
+    "test_outputs.py::test_checkpoint_invalid_utf8_and_duplicate_keys_fall_back_silently": {
+      "priority": "boundary",
+      "rationale": "test checkpoint invalid utf8 and duplicate keys fall back silently；这验证公开边界和拒收口径，失败会产生越界输入或错误放行。",
+      "weight": 0.026
+    },
+    "test_outputs.py::test_checkpoint_rejects_missing_extra_bad_types_ranges_ids_and_tampered_state": {
+      "priority": "boundary",
+      "rationale": "test checkpoint rejects missing extra bad types ranges ids and tampered ；这验证公开边界和拒收口径，失败会产生越界输入或错误放行。",
+      "weight": 0.025
+    },
+    "test_outputs.py::test_config_read_failure_exits_before_publish": {
+      "priority": "supporting",
+      "rationale": "test config read failure exits before publish；这补充验证外围业务约束，失败会降低交付完整性和可运维性。",
+      "weight": 0.014
+    },
+    "test_outputs.py::test_config_rejects_non_object_invalid_utf8_and_duplicate_keys_without_publish": {
+      "priority": "boundary",
+      "rationale": "config rejects non object invalid utf8 and duplicate keys without publis；这验证公开边界和拒收口径，失败会产生越界输入或错误放行。",
+      "weight": 0.025
+    },
+    "test_outputs.py::test_config_requires_exact_top_level_and_particle_fields": {
+      "priority": "supporting",
+      "rationale": "test config requires exact top level and particle fields；这补充验证外围业务约束，失败会降低交付完整性和可运维性。",
+      "weight": 0.014
+    },
+    "test_outputs.py::test_config_types_ranges_boundary_and_unique_ids": {
+      "priority": "boundary",
+      "rationale": "config types ranges boundary and unique ids；这验证公开边界和拒收口径，失败会产生越界输入或错误放行。",
+      "weight": 0.025
+    },
+    "test_outputs.py::test_each_step_advances_then_applies_boundary_then_resolves_collisions": {
+      "priority": "core",
+      "rationale": "each step advances then applies boundary then resolves collisions；这是任务的主交付路径，失败意味着核心业务结果不可用。",
+      "weight": 0.1
+    },
+    "test_outputs.py::test_entrypoint_exists_and_runs": {
+      "priority": "supporting",
+      "rationale": "config types ranges boundary and unique ids；这补充验证外围业务约束，失败会降低交付完整性和可运维性。",
+      "weight": 0.014
+    },
+    "test_outputs.py::test_extreme_finite_input_still_produces_finite_json_numbers": {
+      "priority": "core",
+      "rationale": "test extreme finite input still produces finite json numbers；这是任务的主交付路径，失败意味着核心业务结果不可用。",
+      "weight": 0.1
+    },
+    "test_outputs.py::test_first_replacement_failure_keeps_directory_and_other_file_unchanged": {
+      "priority": "supporting",
+      "rationale": "test first replacement failure keeps directory and other file unchanged；这补充验证外围业务约束，失败会降低交付完整性和可运维性。",
+      "weight": 0.014
+    },
+    "test_outputs.py::test_generated_data_is_deterministic_and_checkpoint_zero_state_is_valid": {
+      "priority": "core",
+      "rationale": "generated data is deterministic and checkpoint zero state is valid；这是任务的主交付路径，失败意味着核心业务结果不可用。",
+      "weight": 0.1
+    },
+    "test_outputs.py::test_invalid_config_preserves_both_existing_targets": {
+      "priority": "recovery",
+      "rationale": "test invalid config preserves both existing targets；这验证失败、重跑或恢复不变量，失败会造成旧数据和台账不一致。",
+      "weight": 0.034
+    },
+    "test_outputs.py::test_output_checkpoint_schema_order_types_and_hashes": {
+      "priority": "core",
+      "rationale": "output checkpoint schema order types and hashes；这是任务的主交付路径，失败意味着核心业务结果不可用。",
+      "weight": 0.1
+    },
+    "test_outputs.py::test_output_preserves_input_order_and_all_diagnostics_are_finite": {
+      "priority": "core",
+      "rationale": "test output preserves input order and all diagnostics are finite；这是任务的主交付路径，失败意味着核心业务结果不可用。",
+      "weight": 0.1
+    },
+    "test_outputs.py::test_repeat_from_final_checkpoint_is_byte_stable": {
+      "priority": "recovery",
+      "rationale": "test repeat from final checkpoint is byte stable；这验证失败、重跑或恢复不变量，失败会造成旧数据和台账不一致。",
+      "weight": 0.034
+    },
+    "test_outputs.py::test_resume_after_unequal_mass_collision_matches_continuous_files_byte_for_byte": {
+      "priority": "core",
+      "rationale": "test resume after unequal mass collision matches continuous files byte f；这是任务的主交付路径，失败意味着核心业务结果不可用。",
+      "weight": 0.1
+    },
+    "test_outputs.py::test_resumed_collision_history_publishes_consistently_to_distinct_parents": {
+      "priority": "supporting",
+      "rationale": "config read failure exits before publish；这补充验证外围业务约束，失败会降低交付完整性和可运维性。",
+      "weight": 0.014
+    },
+    "test_outputs.py::test_second_replacement_failure_rolls_back_regular_and_missing_output_states": {
+      "priority": "boundary",
+      "rationale": "test second replacement failure rolls back regular and missing output st；这验证公开边界和拒收口径，失败会产生越界输入或错误放行。",
+      "weight": 0.025
+    },
+    "test_outputs.py::test_second_replacement_permission_failure_restores_both_regular_files": {
+      "priority": "supporting",
+      "rationale": "test second replacement permission failure restores both regular files；这补充验证外围业务约束，失败会降低交付完整性和可运维性。",
+      "weight": 0.014
+    },
+    "test_outputs.py::test_successful_publish_leaves_no_temporary_files_in_distinct_parents": {
+      "priority": "recovery",
+      "rationale": "config rejects non object invalid utf8 and duplicate keys without publis；这验证失败、重跑或恢复不变量，失败会造成旧数据和台账不一致。",
+      "weight": 0.034
+    },
+    "test_outputs.py::test_temp_creation_failure_in_either_parent_preserves_targets_and_cleans_up": {
+      "priority": "recovery",
+      "rationale": "test temp creation failure in either parent preserves targets and cleans；这验证失败、重跑或恢复不变量，失败会造成旧数据和台账不一致。",
+      "weight": 0.034
+    },
+    "test_outputs.py::test_temp_write_failure_preserves_targets_and_cleans_up": {
+      "priority": "recovery",
+      "rationale": "test temp write failure preserves targets and cleans up；这验证失败、重跑或恢复不变量，失败会造成旧数据和台账不一致。",
+      "weight": 0.034
+    },
+    "test_outputs.py::test_utf8_pair_order_exact_overlap_and_once_per_step_are_deterministic": {
+      "priority": "schema",
+      "rationale": "test utf8 pair order exact overlap and once per step are deterministic；这验证结构、类型或序列化外观，失败会使下游无法稳定消费结果。",
+      "weight": 0.02
+    }
+  },
+  "weight_policy": {
+    "basis": "business_priority",
+    "core_min_share": 0.5,
+    "version": 1
+  }
+}
